@@ -27,8 +27,7 @@ public class RegisterCommandHandler: IRequestHandler<RegisterCommand, ErrorOr<Su
         var user = new User
         {
             Email = request.Email,
-            FirstName = request.FirstName,
-            LastName = request.LastName,
+            Name = request.Name,
             PasswordHash = passwordHash
         };
 

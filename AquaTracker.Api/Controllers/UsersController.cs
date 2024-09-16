@@ -22,7 +22,7 @@ public class UsersController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        var command = new RegisterCommand(request.FirstName, request.LastName, request.Email, request.Password);
+        var command = new RegisterCommand(request.Name, request.Email, request.Password);
         var result = await _mediator.Send(command);
 
         return result.Match(

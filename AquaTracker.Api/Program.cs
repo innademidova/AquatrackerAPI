@@ -10,6 +10,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddApplication();
 builder.Services.AddControllers();
 builder.Services.AddInfrastructure(builder.Configuration.GetConnectionString("DefaultConnection")!);
+builder.Services.AddCors(options => options.AddPolicy("CorsPolicy", policy =>
+{
+    policy.AllowAnyMethod()
+        .AllowAnyHeader()
+        .WithOrigins("https://salmon-field-062bd841e.5.azurestaticapps.net", "http://localhost:3000")
+        .AllowCredentials();
+}));
 
 
 var app = builder.Build();
@@ -20,6 +27,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
 app.MapControllers();
 app.UseExceptionHandler();
