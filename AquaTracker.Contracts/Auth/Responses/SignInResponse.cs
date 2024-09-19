@@ -1,3 +1,3 @@
 ﻿namespace AquaTracker.Contracts.Users.Responses;
 
-public record LoginResponse(string AccessToken);
+public record SignInResponse(string AccessToken);

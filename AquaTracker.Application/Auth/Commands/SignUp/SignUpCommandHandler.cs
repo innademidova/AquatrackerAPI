@@ -3,18 +3,20 @@ using AquaTracker.Domain.Users;
 using ErrorOr;
 using MediatR;
 
-namespace AquaTracker.Application.Users.Commands.Register;
+namespace AquaTracker.Application.Auth.Commands.SignUp;
 
-public class RegisterCommandHandler: IRequestHandler<RegisterCommand, ErrorOr<Success>>
+public class SignUpCommandHandler: IRequestHandler<SignUpCommand, ErrorOr<Success>>
 {
     private readonly IUsersRepository _usersRepository;
+    private readonly IAuthRepository _authRepository;
 
-    public RegisterCommandHandler(IUsersRepository usersRepository)
+    public SignUpCommandHandler(IUsersRepository usersRepository, IAuthRepository authRepository)
     {
         _usersRepository = usersRepository;
+        _authRepository = authRepository;
     }
 
-    public async Task<ErrorOr<Success>> Handle(RegisterCommand request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<Success>> Handle(SignUpCommand request, CancellationToken cancellationToken)
     {
         var existingUser = await _usersRepository.GetUserByEmailAsync(request.Email);
         if (existingUser != null)
@@ -27,11 +29,10 @@ public class RegisterCommandHandler: IRequestHandler<RegisterCommand, ErrorOr<Su
         var user = new User
         {
             Email = request.Email,
-            Name = request.Name,
             PasswordHash = passwordHash
         };
 
-        await _usersRepository.Register(user);
+        await _authRepository.Register(user);
 
         return Result.Success;
     }

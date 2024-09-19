@@ -14,7 +14,7 @@ builder.Services.AddCors(options => options.AddPolicy("CorsPolicy", policy =>
 {
     policy.AllowAnyMethod()
         .AllowAnyHeader()
-        .WithOrigins("https://salmon-field-062bd841e.5.azurestaticapps.net", "http://localhost:3000")
+        .WithOrigins("https://salmon-field-062bd841e.5.azurestaticapps.net", "http://localhost:5173")
         .AllowCredentials();
 }));
 
@@ -28,5 +28,6 @@ app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
 app.MapControllers();
 app.UseExceptionHandler();
+app.UseSetupUserClaimsMiddleware();
 
 app.Run();

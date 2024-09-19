@@ -2,20 +2,20 @@
 using ErrorOr;
 using MediatR;
 
-namespace AquaTracker.Application.Users.Commands.Login;
+namespace AquaTracker.Application.Auth.Commands.SignIn;
 
-public class LoginCommandHandler: IRequestHandler<LoginCommand, ErrorOr<string>>
+public class SignInCommandHandler: IRequestHandler<SignInCommand, ErrorOr<string>>
 {
     private readonly IJwtTokenGenerator _tokenGenerator;
     private readonly IUsersRepository _usersRepository;
 
-    public LoginCommandHandler(IJwtTokenGenerator tokenGenerator, IUsersRepository usersRepository)
+    public SignInCommandHandler(IJwtTokenGenerator tokenGenerator, IUsersRepository usersRepository)
     {
         _tokenGenerator = tokenGenerator;
         _usersRepository = usersRepository;
     }
 
-    public async Task<ErrorOr<string>> Handle(LoginCommand request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<string>> Handle(SignInCommand request, CancellationToken cancellationToken)
     {
         var user = await _usersRepository.GetUserByEmailAsync(request.Email);
 

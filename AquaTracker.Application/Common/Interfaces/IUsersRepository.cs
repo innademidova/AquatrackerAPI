@@ -4,6 +4,6 @@ namespace AquaTracker.Application.Common.Interfaces;
 
 public interface IUsersRepository
 {
-    Task Register(User user);
-    Task<User?> GetUserByEmailAsync(string email); 
+    Task<User?> GetUserByEmailAsync(string email);
+    Task<User> GetCurrentUser();
 }

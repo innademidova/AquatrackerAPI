@@ -2,6 +2,7 @@
 using System.Text;
 using AquaTracker.Application.Authentication;
 using AquaTracker.Application.Behaviors;
+using AquaTracker.Application.Common.Identity;
 using AquaTracker.Application.Common.Interfaces;
 using AquaTracker.Application.Exceptions;
 using FluentValidation;
@@ -25,6 +26,7 @@ public static class DependencyInjection
         services.AddJwtBearerAuthentication();
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
+        services.AddScoped<ICurrentUser, CurrentUser>();
         return services;
     }
 
@@ -32,17 +34,36 @@ public static class DependencyInjection
     {
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options => options.TokenValidationParameters = new TokenValidationParameters
+            .AddJwtBearer(options =>
             {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = AuthOptions.Issuer,
-                ValidAudience = AuthOptions.Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(AuthOptions.Key))
+                options.Events = new JwtBearerEvents
+                {
+                    // Обработчик для получения токена из куки
+                    OnMessageReceived = context =>
+                    {
+                        // Получаем токен из куки с именем "token"
+                        var token = context.Request.Cookies["token"];
+                        if (!string.IsNullOrEmpty(token))
+                        {
+                            context.Token = token;
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = AuthOptions.Issuer,
+                    ValidAudience = AuthOptions.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(AuthOptions.Key))
+                };
             });
+        
         return services;
     }
 }
