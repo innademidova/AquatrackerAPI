@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Users\Requests\" />
       <Folder Include="Users\Responses\" />
       <Folder Include="Water\" />
     </ItemGroup>

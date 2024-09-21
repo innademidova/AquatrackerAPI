@@ -10,4 +10,6 @@ public class User
     public string? Gender { get; set; }
     public double? Weight { get; set; }
     public double? ActiveTime { get; set; }
+    public string? RefreshToken { get; set; }
+    public DateTime? RefreshTokenExpiryTime { get; set; }
 }

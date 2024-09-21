@@ -16,6 +16,7 @@ public static class DependencyInjection
         services.AddDbContext<AquaTrackerDbContext>(options => options.UseSqlServer(connectionString));
         services.AddScoped<IAuthRepository, AuthRepository>();
         services.AddScoped<IUsersRepository, UsersRepository>();
+        services.AddScoped<IUnitOfWork>(serviceProvider => serviceProvider.GetRequiredService<AquaTrackerDbContext>());
         return services;
     }
     

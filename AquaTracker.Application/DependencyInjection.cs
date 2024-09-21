@@ -32,17 +32,15 @@ public static class DependencyInjection
 
     private static IServiceCollection AddJwtBearerAuthentication(this IServiceCollection services)
     {
-        services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddSingleton<IJwtTokenService, JwtTokenService>();
         services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
                 options.Events = new JwtBearerEvents
                 {
-                    // Обработчик для получения токена из куки
                     OnMessageReceived = context =>
                     {
-                        // Получаем токен из куки с именем "token"
-                        var token = context.Request.Cookies["token"];
+                        var token = context.Request.Cookies["accessToken"];
                         if (!string.IsNullOrEmpty(token))
                         {
                             context.Token = token;
