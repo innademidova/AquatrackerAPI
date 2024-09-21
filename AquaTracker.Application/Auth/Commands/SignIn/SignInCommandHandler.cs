@@ -1,21 +1,24 @@
-﻿using AquaTracker.Application.Common.Interfaces;
+﻿using AquaTracker.Application.Auth.DTOs;
+using AquaTracker.Application.Common.Interfaces;
 using ErrorOr;
 using MediatR;
 
 namespace AquaTracker.Application.Auth.Commands.SignIn;
 
-public class SignInCommandHandler: IRequestHandler<SignInCommand, ErrorOr<string>>
+public class SignInCommandHandler : IRequestHandler<SignInCommand, ErrorOr<AuthResponse>>
 {
-    private readonly IJwtTokenGenerator _tokenGenerator;
+    private readonly IJwtTokenService _tokenService;
     private readonly IUsersRepository _usersRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public SignInCommandHandler(IJwtTokenGenerator tokenGenerator, IUsersRepository usersRepository)
+    public SignInCommandHandler(IJwtTokenService tokenService, IUsersRepository usersRepository, IUnitOfWork unitOfWork)
     {
-        _tokenGenerator = tokenGenerator;
+        _tokenService = tokenService;
         _usersRepository = usersRepository;
+        _unitOfWork = unitOfWork;
     }
 
-    public async Task<ErrorOr<string>> Handle(SignInCommand request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<AuthResponse>> Handle(SignInCommand request, CancellationToken cancellationToken)
     {
         var user = await _usersRepository.GetUserByEmailAsync(request.Email);
 
@@ -29,8 +32,14 @@ public class SignInCommandHandler: IRequestHandler<SignInCommand, ErrorOr<string
             return Error.Failure("Email or password are incorrect");
         }
 
-        var accessToken = _tokenGenerator.GenerateToken(user);
+        var accessToken = _tokenService.GenerateAccessToken(user);
+        var refreshToken = _tokenService.GenerateRefreshToken();
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+        
+        var response = new AuthResponse(accessToken, refreshToken);
+        await _unitOfWork.CommitChangesAsync();
 
-        return accessToken;
+        return response;
     }
 }

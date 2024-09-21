@@ -1,4 +1,6 @@
-﻿using AquaTracker.Application.Users.Queries.GetCurrentUser;
+﻿using AquaTracker.Application.Users.Commands;
+using AquaTracker.Application.Users.Queries.GetCurrentUser;
+using AquaTracker.Contracts.Users.Requests;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +9,7 @@ namespace AquaTracker.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class UsersController: ControllerBase
+public class UsersController : ControllerBase
 {
     private readonly ISender _mediator;
 
@@ -15,6 +17,7 @@ public class UsersController: ControllerBase
     {
         _mediator = mediator;
     }
+
     [HttpGet("me")]
     [Authorize]
     public async Task<IActionResult> GetCurrentUser()
@@ -25,5 +28,19 @@ public class UsersController: ControllerBase
         return result.Match(
             currentUser => Ok(result.Value),
             errors => Problem());
+    }
+
+    [HttpPut("update")]
+    [Authorize]
+    public async Task<IActionResult> UpdateUser(UpdateUserRequest request)
+    {
+        var command = new UpdateUserCommand(request.Name, request.Email, request.Gender, request.DailyWaterGoal,
+            request.Weight,
+            request.ActiveTime);
+        var result = await _mediator.Send(command);
+
+        return result.Match(
+            _ => Ok("User was updated successfully"),
+            errors => Problem(statusCode: 400, detail: string.Join(",", errors.Select(e => e.Code))));
     }
 }

@@ -7,9 +7,9 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace AquaTracker.Application.Authentication;
 
-public class JwtTokenGenerator: IJwtTokenGenerator
+public class JwtTokenService : IJwtTokenService
 {
-    public string GenerateToken(User user)
+    public string GenerateAccessToken(User user)
     {
         var signingCredentials = new SigningCredentials(
             new SymmetricSecurityKey(
@@ -31,5 +31,12 @@ public class JwtTokenGenerator: IJwtTokenGenerator
             signingCredentials: signingCredentials);
 
         return new JwtSecurityTokenHandler().WriteToken(securityToken);
+    }
+
+    public string GenerateRefreshToken()
+    {
+        var refreshToken = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+
+        return refreshToken;
     }
 }

@@ -1,6 +1,7 @@
-﻿using AquaTracker.Application.Auth.Commands.SignIn;
+﻿using AquaTracker.Application.Auth.Commands.RefreshToken;
+using AquaTracker.Application.Auth.Commands.SignIn;
 using AquaTracker.Application.Auth.Commands.SignUp;
-using AquaTracker.Contracts.Users.Requests;
+using AquaTracker.Contracts.Auth.Requests;
 using AquaTracker.Contracts.Users.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -17,18 +18,18 @@ public class AuthController : ControllerBase
     {
         _mediator = mediator;
     }
-    
-    private void SetTokenCookie(HttpResponse response, string token)
+
+    private void SetTokenCookie(HttpResponse response, string token, string tokenName, int daysValid)
     {
         var cookieOptions = new CookieOptions
         {
-            HttpOnly = true, // Защищает от XSS, куки недоступны для JavaScript
-            Secure = true,   // Куки будут передаваться только по HTTPS
-            SameSite = SameSiteMode.None, // Для поддержки кросс-доменных запросов (если это нужно)
-            Expires = DateTime.UtcNow.AddMinutes(30) // Время жизни куки
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddDays(daysValid)
         };
 
-        response.Cookies.Append("token", token, cookieOptions);
+        response.Cookies.Append(tokenName, token, cookieOptions);
     }
 
     [HttpPost("signup")]
@@ -47,13 +48,38 @@ public class AuthController : ControllerBase
     {
         var command = new SignInCommand(request.Email, request.Password);
         var result = await _mediator.Send(command);
-        
+
         return result.Match(
-            accessToken =>
+            authResponse =>
             {
-                SetTokenCookie(Response, result.Value);
-                return Ok(new SignInResponse(result.Value));
+                SetTokenCookie(Response, authResponse.AccessToken, "accessToken", 1);
+                SetTokenCookie(Response, authResponse.RefreshToken, "refreshToken", 7);
+
+                return Ok(new SignInResponse(authResponse.AccessToken));
             },
             errors => Problem(statusCode: 400, detail: string.Join(",", errors.Select(e => e.Code))));
+    }
+
+    [HttpPost("refresh-token")]
+    public async Task<IActionResult> RefreshToken()
+    {
+        var refreshToken = Request.Cookies["refreshToken"];
+
+        if (string.IsNullOrEmpty(refreshToken))
+        {
+            return Unauthorized("No refresh token provided.");
+        }
+
+        var command = new RefreshTokenCommand(refreshToken);
+        var result = await _mediator.Send(command);
+
+        return result.Match(
+            authResponse =>
+            {
+                SetTokenCookie(Response, authResponse.RefreshToken, "refreshToken", 7);
+
+                return Ok(new { AccessToken = authResponse.AccessToken });
+            },
+            errors => Problem(statusCode: 401, detail: string.Join(",", errors.Select(e => e.Code))));
     }
 }
