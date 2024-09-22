@@ -2,7 +2,7 @@
 
 namespace AquaTracker.Domain.Water;
 
-public class Water
+public class WaterEntry
 {
     public int Id { get; set; }
     public double Amount { get; set; }

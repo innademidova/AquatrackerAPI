@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AquaTracker.Infrastructure.Water;
 
-public class WaterConfiguration : IEntityTypeConfiguration<Domain.Water.Water>
+public class WaterConfiguration : IEntityTypeConfiguration<Domain.Water.WaterEntry>
 {
-    public void Configure(EntityTypeBuilder<Domain.Water.Water> builder)
+    public void Configure(EntityTypeBuilder<Domain.Water.WaterEntry> builder)
     {
         // Указываем, что Id — это первичный ключ
         builder.HasKey(w => w.Id);

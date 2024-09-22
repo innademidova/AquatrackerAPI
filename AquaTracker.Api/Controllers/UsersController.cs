@@ -1,6 +1,8 @@
 ﻿using AquaTracker.Application.Users.Commands;
 using AquaTracker.Application.Users.Queries.GetCurrentUser;
+using AquaTracker.Application.Users.Queries.GetUsersCount;
 using AquaTracker.Contracts.Users.Requests;
+using ErrorOr;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -41,6 +43,17 @@ public class UsersController : ControllerBase
 
         return result.Match(
             _ => Ok("User was updated successfully"),
+            errors => Problem(statusCode: 400, detail: string.Join(",", errors.Select(e => e.Code))));
+    }
+
+    [HttpGet("count")]
+    public async Task<IActionResult> GetUsersCount()
+    {
+        var query = new GetUsersCountQuery();
+        var result = await _mediator.Send(query);
+
+        return result.Match(
+            count => Ok(count),
             errors => Problem(statusCode: 400, detail: string.Join(",", errors.Select(e => e.Code))));
     }
 }

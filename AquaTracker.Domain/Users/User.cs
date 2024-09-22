@@ -6,7 +6,7 @@ public class User
     public string Email { get; set; }
     public string PasswordHash { get; set; }
     public double DailyWaterGoal { get; set; }
-    public ICollection<Water.Water> WaterEntries { get; set; }
+    public ICollection<Water.WaterEntry> WaterEntries { get; set; }
     public string? Gender { get; set; }
     public double? Weight { get; set; }
     public double? ActiveTime { get; set; }

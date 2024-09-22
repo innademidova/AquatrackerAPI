@@ -7,6 +7,6 @@ namespace AquaTracker.Application.Common.Interfaces;
 public interface IAppDbContext
 {
     DbSet<User> Users { get; }
-    DbSet<Water> Water { get; }
+    DbSet<WaterEntry> Water { get; }
     Task CommitChangesAsync();
 }
