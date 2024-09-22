@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AquaTracker.Infrastructure.Common.Persistence;
 
-public class AquaTrackerDbContext: DbContext, IUnitOfWork
+public class AquaTrackerDbContext: DbContext, IUnitOfWork, IAppDbContext
 {
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Domain.Water.Water> Water { get; set; } = null!;

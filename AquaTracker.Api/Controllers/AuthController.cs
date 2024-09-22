@@ -4,8 +4,8 @@ using AquaTracker.Application.Auth.Commands.SignOut;
 using AquaTracker.Application.Auth.Commands.SignUp;
 using AquaTracker.Contracts.Auth.Requests;
 using AquaTracker.Contracts.Users.Responses;
-using ErrorOr;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AquaTracker.Api.Controllers;
@@ -62,6 +62,7 @@ public class AuthController : ControllerBase
             errors => Problem(statusCode: 400, detail: string.Join(",", errors.Select(e => e.Code))));
     }
 
+    [Authorize]
     [HttpPost("refresh-token")]
     public async Task<IActionResult> RefreshToken()
     {
@@ -85,8 +86,9 @@ public class AuthController : ControllerBase
             errors => Problem(statusCode: 401, detail: string.Join(",", errors.Select(e => e.Code))));
     }
 
+    [Authorize]
     [HttpPost("signout")]
-    public async Task<IActionResult> SignOut()
+    public async Task<IActionResult> LogOut()
     {
         var command = new SignOutCommand();
         var result = await _mediator.Send(command);

@@ -2,29 +2,26 @@
 using AquaTracker.Application.Common.Interfaces;
 using ErrorOr;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace AquaTracker.Application.Auth.Commands.RefreshToken;
 
 public class RefreshTokenCommandHandler: IRequestHandler<RefreshTokenCommand, ErrorOr<AuthResponse>>
 {
-    private readonly IUsersRepository _usersRepository;
+    private readonly IAppDbContext _dbContext;
     private readonly IJwtTokenService _tokenService;
     private readonly ICurrentUser _currentUser;
-    private readonly IUnitOfWork _unitOfWork;
 
-    public RefreshTokenCommandHandler(IUsersRepository usersRepository, IJwtTokenService tokenService, ICurrentUser currentUser, IUnitOfWork unitOfWork)
+    public RefreshTokenCommandHandler(IJwtTokenService tokenService, ICurrentUser currentUser, IAppDbContext dbContext)
     {
-        _usersRepository = usersRepository;
         _tokenService = tokenService;
         _currentUser = currentUser;
-        _unitOfWork = unitOfWork;
+        _dbContext = dbContext;
     }
 
     public async Task<ErrorOr<AuthResponse>> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
     {
-        var userId = _currentUser.Id;
-        
-        var user = await _usersRepository.GetUserById(userId);
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == _currentUser.Id, cancellationToken);
         if (user == null || user.RefreshToken != request.RefreshToken)
         {
             return Error.Failure("Invalid refresh token.");
@@ -35,7 +32,7 @@ public class RefreshTokenCommandHandler: IRequestHandler<RefreshTokenCommand, Er
         
         user.RefreshToken = newRefreshToken;
         user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-        await _unitOfWork.CommitChangesAsync();
+        await _dbContext.CommitChangesAsync();
         
         var response = new AuthResponse(newAccessToken, newRefreshToken);
         return response;

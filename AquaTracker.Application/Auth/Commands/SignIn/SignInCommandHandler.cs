@@ -2,25 +2,24 @@
 using AquaTracker.Application.Common.Interfaces;
 using ErrorOr;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace AquaTracker.Application.Auth.Commands.SignIn;
 
 public class SignInCommandHandler : IRequestHandler<SignInCommand, ErrorOr<AuthResponse>>
 {
     private readonly IJwtTokenService _tokenService;
-    private readonly IUsersRepository _usersRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IAppDbContext _dbContext;
 
-    public SignInCommandHandler(IJwtTokenService tokenService, IUsersRepository usersRepository, IUnitOfWork unitOfWork)
+    public SignInCommandHandler(IJwtTokenService tokenService, IAppDbContext dbContext)
     {
         _tokenService = tokenService;
-        _usersRepository = usersRepository;
-        _unitOfWork = unitOfWork;
+        _dbContext = dbContext;
     }
 
     public async Task<ErrorOr<AuthResponse>> Handle(SignInCommand request, CancellationToken cancellationToken)
     {
-        var user = await _usersRepository.GetUserByEmailAsync(request.Email);
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
 
         if (user == null)
         {
@@ -38,7 +37,7 @@ public class SignInCommandHandler : IRequestHandler<SignInCommand, ErrorOr<AuthR
         user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
         
         var response = new AuthResponse(accessToken, refreshToken);
-        await _unitOfWork.CommitChangesAsync();
+        await _dbContext.CommitChangesAsync();
 
         return response;
     }

@@ -2,23 +2,22 @@
 using AquaTracker.Domain.Users;
 using ErrorOr;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace AquaTracker.Application.Auth.Commands.SignUp;
 
 public class SignUpCommandHandler: IRequestHandler<SignUpCommand, ErrorOr<Success>>
 {
-    private readonly IUsersRepository _usersRepository;
-    private readonly IAuthRepository _authRepository;
+    private readonly IAppDbContext _dbContext;
 
-    public SignUpCommandHandler(IUsersRepository usersRepository, IAuthRepository authRepository)
+    public SignUpCommandHandler(IAppDbContext dbContext)
     {
-        _usersRepository = usersRepository;
-        _authRepository = authRepository;
+        _dbContext = dbContext;
     }
 
     public async Task<ErrorOr<Success>> Handle(SignUpCommand request, CancellationToken cancellationToken)
     {
-        var existingUser = await _usersRepository.GetUserByEmailAsync(request.Email);
+        var existingUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
         if (existingUser != null)
         {
             return Error.Failure("User with this email already exists.");
@@ -32,7 +31,8 @@ public class SignUpCommandHandler: IRequestHandler<SignUpCommand, ErrorOr<Succes
             PasswordHash = passwordHash
         };
 
-        await _authRepository.Register(user);
+        await _dbContext.Users.AddAsync(user, cancellationToken);
+        await _dbContext.CommitChangesAsync();
 
         return Result.Success;
     }

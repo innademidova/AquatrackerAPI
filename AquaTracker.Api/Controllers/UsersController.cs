@@ -30,7 +30,7 @@ public class UsersController : ControllerBase
             errors => Problem());
     }
 
-    [HttpPut("update")]
+    [HttpPut]
     [Authorize]
     public async Task<IActionResult> UpdateUser(UpdateUserRequest request)
     {

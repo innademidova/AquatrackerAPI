@@ -1,27 +1,24 @@
 ﻿using AquaTracker.Application.Common.Interfaces;
 using ErrorOr;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace AquaTracker.Application.Auth.Commands.SignOut;
 
 public class SignOutCommandHandler : IRequestHandler<SignOutCommand, ErrorOr<Success>>
 {
-    private readonly IUsersRepository _usersRepository;
+    private readonly IAppDbContext _dbContext;
     private readonly ICurrentUser _currentUser;
-    private readonly IUnitOfWork _unitOfWork;
 
-    public SignOutCommandHandler(ICurrentUser currentUser, IUsersRepository usersRepository, IUnitOfWork unitOfWork)
+    public SignOutCommandHandler(ICurrentUser currentUser, IAppDbContext dbContext)
     {
         _currentUser = currentUser;
-        _usersRepository = usersRepository;
-        _unitOfWork = unitOfWork;
+        _dbContext = dbContext;
     }
 
     public async Task<ErrorOr<Success>> Handle(SignOutCommand request, CancellationToken cancellationToken)
     {
-        var userId = _currentUser.Id;
-
-        var user = await _usersRepository.GetUserById(userId);
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == _currentUser.Id, cancellationToken);
         if (user == null)
         {
             return Error.Failure("User is not authenticated.");
@@ -29,7 +26,7 @@ public class SignOutCommandHandler : IRequestHandler<SignOutCommand, ErrorOr<Suc
 
         user.RefreshToken = null;
         user.RefreshTokenExpiryTime = null;
-        await _unitOfWork.CommitChangesAsync();
+        await _dbContext.CommitChangesAsync();
 
         return Result.Success;
     }
