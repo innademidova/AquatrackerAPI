@@ -11,7 +11,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApplication();
 builder.Services.AddControllers();
-builder.Services.AddInfrastructure(builder.Configuration.GetConnectionString("DefaultConnection")!);
+builder.Services.AddInfrastructure(builder.Configuration.GetConnectionString("Default")!);
 builder.Services.AddCors(options => options.AddPolicy("CorsPolicy", policy =>
 {
     policy.AllowAnyMethod()
