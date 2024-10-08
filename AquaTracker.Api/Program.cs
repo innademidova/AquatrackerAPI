@@ -1,5 +1,7 @@
 using AquaTracker.Application;
 using AquaTracker.Infrastructure;
+using AquaTracker.Infrastructure.Common.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,15 @@ builder.Services.AddCors(options => options.AddPolicy("CorsPolicy", policy =>
 
 
 var app = builder.Build();
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AquaTrackerDbContext>();
+    var migrations = await dbContext.Database.GetPendingMigrationsAsync();
+    if (migrations.Any())
+    {
+        await dbContext.Database.MigrateAsync();
+    }
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();
