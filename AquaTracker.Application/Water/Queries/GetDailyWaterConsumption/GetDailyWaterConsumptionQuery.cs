@@ -4,4 +4,4 @@ using MediatR;
 
 namespace AquaTracker.Application.Water.Queries.GetDailyWaterConsumption;
 
-public record GetDailyWaterConsumptionQuery(): IRequest<ErrorOr<List<WaterEntry>>>;
+public record GetDailyWaterConsumptionQuery(string Date): IRequest<ErrorOr<List<WaterEntry>>>;

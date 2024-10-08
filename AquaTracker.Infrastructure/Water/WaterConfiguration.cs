@@ -7,18 +7,19 @@ public class WaterConfiguration : IEntityTypeConfiguration<Domain.Water.WaterEnt
 {
     public void Configure(EntityTypeBuilder<Domain.Water.WaterEntry> builder)
     {
-        // Указываем, что Id — это первичный ключ
         builder.HasKey(w => w.Id);
-
-        // Поле Amount должно быть обязательным
+        builder.Property(w => w.Id)
+            .ValueGeneratedOnAdd();
+        
         builder.Property(w => w.Amount)
             .IsRequired();
 
-        // Поле TimeLogged также должно быть обязательным
-        builder.Property(w => w.Time)
+        builder.Property(w => w.Date)
             .IsRequired();
 
-        // Настройка связи с сущностью User
+        builder.Property(w => w.LoggedTime)
+            .IsRequired();
+        
         builder.HasOne(w => w.User)
             .WithMany(u => u.WaterEntries)
             .HasForeignKey(w => w.UserId);

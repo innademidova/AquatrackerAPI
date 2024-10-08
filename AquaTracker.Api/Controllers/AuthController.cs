@@ -87,7 +87,7 @@ public class AuthController : ControllerBase
     }
 
     [Authorize]
-    [HttpPost("signout")]
+    [HttpPost("logout")]
     public async Task<IActionResult> LogOut()
     {
         var command = new SignOutCommand();

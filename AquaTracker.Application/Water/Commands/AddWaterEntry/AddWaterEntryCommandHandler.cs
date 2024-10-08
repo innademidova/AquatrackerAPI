@@ -1,10 +1,9 @@
 ﻿using AquaTracker.Application.Common.Interfaces;
-using AquaTracker.Application.Water.Commands.AddWaterEntry;
+using AquaTracker.Domain.Water;
 using ErrorOr;
 using MediatR;
-using AquaTracker.Domain.Water;
 
-namespace AquaTracker.Application.Water.Commands;
+namespace AquaTracker.Application.Water.Commands.AddWaterEntry;
 
 public class AddWaterEntryCommandHandler : IRequestHandler<AddWaterEntryCommand, ErrorOr<Success>>
 {
@@ -19,10 +18,16 @@ public class AddWaterEntryCommandHandler : IRequestHandler<AddWaterEntryCommand,
 
     public async Task<ErrorOr<Success>> Handle(AddWaterEntryCommand request, CancellationToken cancellationToken)
     {
+        if (!DateOnly.TryParse(request.Date, out var parsedDate))
+        {
+            return Error.Failure("Invalid date format. Please use YYYY-MM-DD.");
+        }
+        
         var waterEntry = new WaterEntry
         {
             Amount = request.Amount,
-            Time = DateTime.UtcNow,
+           Date = parsedDate,
+            LoggedTime = TimeOnly.ParseExact(request.Time, "HH:mm"),
             UserId = _currentUser.Id
         };
 

@@ -25,7 +25,7 @@ public class WaterController : ControllerBase
     [Authorize]
     public async Task<IActionResult> AddWaterEntry(AddWaterEntryRequest request)
     {
-        var command = new AddWaterEntryCommand(request.Amount);
+        var command = new AddWaterEntryCommand(request.Amount, request.Date, request.Time);
         var result = await _mediator.Send(command);
 
         return result.Match(
@@ -33,7 +33,7 @@ public class WaterController : ControllerBase
             errors => Problem());
     }
 
-    [HttpPut("{id:int}/edit")]
+    [HttpPut("edit")]
     [Authorize]
     public async Task<IActionResult> EditWaterEntry(EditWaterEntryRequest request)
     {
@@ -59,9 +59,9 @@ public class WaterController : ControllerBase
     
     [HttpGet("daily-consumption")]
     [Authorize]
-    public async Task<IActionResult> GetDaiLyWaterConsumption()
+    public async Task<IActionResult> GetDaiLyWaterConsumption([FromQuery] GetDaiLyWaterConsumptionRequest request)
     {
-        var query = new GetDailyWaterConsumptionQuery();
+        var query = new GetDailyWaterConsumptionQuery(request.Date);
         var result = await _mediator.Send(query);
 
         return result.Match(

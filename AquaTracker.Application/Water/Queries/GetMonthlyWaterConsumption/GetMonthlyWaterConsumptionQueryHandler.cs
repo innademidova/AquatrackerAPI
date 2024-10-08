@@ -18,11 +18,11 @@ public class GetMonthlyWaterConsumptionQueryHandler: IRequestHandler<GetMonthlyW
     }
     public async Task<ErrorOr<List<WaterEntry>>> Handle(GetMonthlyWaterConsumptionQuery request, CancellationToken cancellationToken)
     {
-        var firstDayOfMonth = new DateTime(request.Year, request.Month, 1);
+        var firstDayOfMonth = DateOnly.FromDateTime(new DateTime(request.Year, request.Month, 1));
         var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
         
         var waterEntries = await _dbContext.Water
-            .Where(w => w.UserId == _currentUser.Id && w.Time >= firstDayOfMonth && w.Time <= lastDayOfMonth)
+            .Where(w => w.UserId == _currentUser.Id && w.Date >= firstDayOfMonth && w.Date <= lastDayOfMonth)
             .ToListAsync(cancellationToken);
 
         return waterEntries;

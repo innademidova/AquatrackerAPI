@@ -21,9 +21,11 @@ public class
     public async Task<ErrorOr<List<WaterEntry>>> Handle(GetDailyWaterConsumptionQuery request,
         CancellationToken cancellationToken)
     {
-        var today = DateTime.UtcNow.Date;
-        var tomorrow = today.AddDays(1);
-        var dailyWaterConsumption = await _dbContext.Water.Where(w => w.UserId == _currentUser.Id && w.Time >= today && w.Time < tomorrow)
+        if (!DateOnly.TryParse(request.Date, out var parsedDate))
+        {
+            return Error.Failure("Invalid date format. Please use YYYY-MM-DD.");
+        }
+        var dailyWaterConsumption = await _dbContext.Water.Where(w => w.UserId == _currentUser.Id && w.Date == parsedDate)
             .ToListAsync(cancellationToken);
 
         return dailyWaterConsumption;
