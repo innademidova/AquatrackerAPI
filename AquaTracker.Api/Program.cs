@@ -14,7 +14,7 @@ builder.Services.AddCors(options => options.AddPolicy("CorsPolicy", policy =>
 {
     policy.AllowAnyMethod()
         .AllowAnyHeader()
-        .WithOrigins("https://salmon-field-062bd841e.5.azurestaticapps.net", "http://localhost:5173")
+        .WithOrigins("https://zealous-rock-05b8ec81e.5.azurestaticapps.net", "http://localhost:5173")
         .AllowCredentials();
 }));
 

@@ -3,22 +3,23 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AquaTracker.Infrastructure.Water;
 
-public class WaterConfiguration : IEntityTypeConfiguration<Domain.Water.Water>
+public class WaterConfiguration : IEntityTypeConfiguration<Domain.Water.WaterEntry>
 {
-    public void Configure(EntityTypeBuilder<Domain.Water.Water> builder)
+    public void Configure(EntityTypeBuilder<Domain.Water.WaterEntry> builder)
     {
-        // Указываем, что Id — это первичный ключ
         builder.HasKey(w => w.Id);
-
-        // Поле Amount должно быть обязательным
+        builder.Property(w => w.Id)
+            .ValueGeneratedOnAdd();
+        
         builder.Property(w => w.Amount)
             .IsRequired();
 
-        // Поле TimeLogged также должно быть обязательным
-        builder.Property(w => w.Time)
+        builder.Property(w => w.Date)
             .IsRequired();
 
-        // Настройка связи с сущностью User
+        builder.Property(w => w.LoggedTime)
+            .IsRequired();
+        
         builder.HasOne(w => w.User)
             .WithMany(u => u.WaterEntries)
             .HasForeignKey(w => w.UserId);
