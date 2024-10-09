@@ -32,6 +32,12 @@ await using (var scope = app.Services.CreateAsyncScope())
     }
 }
 
+app.MapGet("/health", (IConfiguration configuration) => new
+{
+    ImageTag = configuration["CurrentImageTag"]
+});
+
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
