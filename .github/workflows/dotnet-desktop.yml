@@ -27,7 +27,7 @@ jobs:
       - name: Replace CurrentImageTag in appsettings.json
         run: |
           GITHUB_SHA_SHORT=${{ github.sha }}
-          sed -i 's/"CurrentImageTag": "latest"/"CurrentImageTag": "'${GITHUB_SHA_SHORT}'"/' ./.AquaTrack.Api/appsettings.json
+          sed -i 's/"CurrentImageTag": "latest"/"CurrentImageTag": "'${GITHUB_SHA_SHORT}'"/' ./AquaTrack.Api/appsettings.json
       - name: Verify appsettings.json
         run: cat ./WordFlux.ApiService/appsettings.json
       - name: Test
