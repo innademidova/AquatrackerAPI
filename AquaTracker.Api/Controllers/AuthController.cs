@@ -27,7 +27,9 @@ public class AuthController : ControllerBase
         {
             HttpOnly = true,
             Secure = true,
-            SameSite = SameSiteMode.None,
+            SameSite = SameSiteMode.Strict,
+            Domain = ".aquatrack.site",
+            Path = "/",
             Expires = DateTime.UtcNow.AddDays(daysValid)
         };
 
