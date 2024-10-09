@@ -16,7 +16,7 @@ builder.Services.AddCors(options => options.AddPolicy("CorsPolicy", policy =>
 {
     policy.AllowAnyMethod()
         .AllowAnyHeader()
-        .WithOrigins("https://zealous-rock-05b8ec81e.5.azurestaticapps.net", "http://localhost:5173")
+        .WithOrigins("https://www.aquatrack.site", "https://aquatrack.site", "http://localhost:5173")
         .AllowCredentials();
 }));
 
