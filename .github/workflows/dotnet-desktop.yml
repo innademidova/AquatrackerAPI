@@ -26,10 +26,10 @@ jobs:
         run: |
           GITHUB_SHA_SHORT=${{ github.sha }}
           sed -i 's/"CurrentImageTag": "latest"/"CurrentImageTag": "'${GITHUB_SHA_SHORT}'"/' ./AquaTracker.Api/appsettings.json
+      - name: Verify appsettings.json
+        run: cat ./AquaTracker.Api/appsettings.json
       - name: Build
         run: dotnet build --no-restore
-      - name: Verify appsettings.json
-        run: cat ./WordFlux.ApiService/appsettings.json
       - name: Test
         run: dotnet test --no-build --verbosity normal
       - name: Create Docker Image
