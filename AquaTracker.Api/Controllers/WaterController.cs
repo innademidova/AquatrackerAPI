@@ -1,4 +1,5 @@
-﻿using AquaTracker.Application.Water.Commands.AddWaterEntry;
+﻿using AquaTracker.Api.Extensions;
+using AquaTracker.Application.Water.Commands.AddWaterEntry;
 using AquaTracker.Application.Water.Commands.DeleteWaterEntry;
 using AquaTracker.Application.Water.Commands.EditWaterEntry;
 using AquaTracker.Application.Water.Queries.GetDailyWaterConsumption;
@@ -28,9 +29,7 @@ public class WaterController : ControllerBase
         var command = new AddWaterEntryCommand(request.Amount, request.Date, request.Time);
         var result = await _mediator.Send(command);
 
-        return result.Match(
-            success => Ok(success),
-            errors => Problem());
+        return this.ToActionResult(result, success => Ok(success));
     }
 
     [HttpPut("edit")]
@@ -40,9 +39,7 @@ public class WaterController : ControllerBase
         var command = new EditWaterEntryCommand(request.Amount, request.Id);
         var result = await _mediator.Send(command);
 
-        return result.Match(
-            success => Ok(success),
-            errors => Problem());
+        return this.ToActionResult(result, success => Ok(success));
     }
 
     [HttpDelete("{id:int}/delete")]
@@ -52,11 +49,9 @@ public class WaterController : ControllerBase
         var command = new DeleteWaterEntryCommand(id);
         var result = await _mediator.Send(command);
 
-        return result.Match(
-            success => Ok(success),
-            errors => Problem());
+        return this.ToActionResult(result, success => Ok(success));
     }
-    
+
     [HttpGet("daily-consumption")]
     [Authorize]
     public async Task<IActionResult> GetDaiLyWaterConsumption([FromQuery] GetDaiLyWaterConsumptionRequest request)
@@ -64,11 +59,9 @@ public class WaterController : ControllerBase
         var query = new GetDailyWaterConsumptionQuery(request.Date);
         var result = await _mediator.Send(query);
 
-        return result.Match(
-            waterEntries => Ok(waterEntries),
-            errors => Problem());
+        return this.ToActionResult(result, Ok);
     }
-    
+
     [HttpGet("monthly-consumption")]
     [Authorize]
     public async Task<IActionResult> GetMonthlyWaterConsumption(int year, int month)
@@ -76,8 +69,6 @@ public class WaterController : ControllerBase
         var query = new GetMonthlyWaterConsumptionQuery(year, month);
         var result = await _mediator.Send(query);
 
-        return result.Match(
-            waterEntries => Ok(waterEntries),
-            errors => Problem());
+        return this.ToActionResult(result, Ok);
     }
 }

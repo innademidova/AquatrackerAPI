@@ -4,7 +4,6 @@ using AquaTracker.Application.Authentication;
 using AquaTracker.Application.Behaviors;
 using AquaTracker.Application.Common.Identity;
 using AquaTracker.Application.Common.Interfaces;
-using AquaTracker.Application.Exceptions;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,8 +23,13 @@ public static class DependencyInjection
         });
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         services.AddJwtBearerAuthentication();
-        services.AddExceptionHandler<GlobalExceptionHandler>();
-        services.AddProblemDetails();
+        services.AddProblemDetails(options =>
+        {
+            options.CustomizeProblemDetails = context =>
+            {
+                context.ProblemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+            };
+        });
         services.AddScoped<ICurrentUser, CurrentUser>();
         return services;
     }

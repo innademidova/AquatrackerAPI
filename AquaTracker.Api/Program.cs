@@ -1,6 +1,7 @@
 using AquaTracker.Application;
 using AquaTracker.Infrastructure;
 using AquaTracker.Infrastructure.Common.Persistence;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -37,13 +38,36 @@ app.MapGet("/health", (IConfiguration configuration) => new
     ImageTag = configuration["CurrentImageTag"]
 });
 
-
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
-app.UseExceptionHandler();
+app.UseExceptionHandler("/error");
+app.Map("/error", (HttpContext context) =>
+{
+    Exception? exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
+
+    if (exception is null)
+    {
+        //handling, logging
+
+        return Results.Problem();
+    }
+
+    if (exception is FluentValidation.ValidationException validationException)
+    {
+        var validationErrors = validationException.Errors
+            .Select(e => new { e.PropertyName, e.ErrorMessage });
+
+        return Results.ValidationProblem(validationErrors.ToDictionary(
+            e => e.PropertyName,
+            e => new[] { e.ErrorMessage })
+        );
+    }
+
+    return Results.Problem();
+});
 app.MapControllers();
 app.UseSetupUserClaimsMiddleware();
 

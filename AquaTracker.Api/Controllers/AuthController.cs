@@ -1,4 +1,5 @@
-﻿using AquaTracker.Application.Auth.Commands.RefreshToken;
+﻿using AquaTracker.Api.Extensions;
+using AquaTracker.Application.Auth.Commands.RefreshToken;
 using AquaTracker.Application.Auth.Commands.SignIn;
 using AquaTracker.Application.Auth.Commands.SignOut;
 using AquaTracker.Application.Auth.Commands.SignUp;
@@ -15,10 +16,12 @@ namespace AquaTracker.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly ISender _mediator;
+    private readonly IWebHostEnvironment _env;
 
-    public AuthController(ISender mediator)
+    public AuthController(ISender mediator, IWebHostEnvironment env)
     {
         _mediator = mediator;
+        _env = env;
     }
 
     private void SetTokenCookie(HttpResponse response, string token, string tokenName, int daysValid)
@@ -28,10 +31,14 @@ public class AuthController : ControllerBase
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.Strict,
-            Domain = ".aquatrack.site",
+
             Path = "/",
             Expires = DateTime.UtcNow.AddDays(daysValid)
         };
+        if (!_env.IsDevelopment())
+        {
+            cookieOptions.Domain = ".aquatrack.site";
+        }
 
         response.Cookies.Append(tokenName, token, cookieOptions);
     }
@@ -41,10 +48,7 @@ public class AuthController : ControllerBase
     {
         var command = new SignUpCommand(request.Email, request.Password);
         var result = await _mediator.Send(command);
-
-        return result.Match(
-            success => Ok("User registered successfully"),
-            errors => Problem(statusCode: 400, detail: string.Join(",", errors.Select(e => e.Code))));
+        return this.ToActionResult(result, _ => Ok("User registered successfully"));
     }
 
     [HttpPost("signin")]
@@ -53,15 +57,13 @@ public class AuthController : ControllerBase
         var command = new SignInCommand(request.Email, request.Password);
         var result = await _mediator.Send(command);
 
-        return result.Match(
-            authResponse =>
-            {
-                SetTokenCookie(Response, authResponse.AccessToken, "accessToken", 1);
-                SetTokenCookie(Response, authResponse.RefreshToken, "refreshToken", 7);
+        return this.ToActionResult(result, authResponse =>
+        {
+            SetTokenCookie(Response, authResponse.AccessToken, "accessToken", 1);
+            SetTokenCookie(Response, authResponse.RefreshToken, "refreshToken", 7);
 
-                return Ok(new SignInResponse(authResponse.AccessToken));
-            },
-            errors => Problem(statusCode: 400, detail: string.Join(",", errors.Select(e => e.Code))));
+            return Ok(new SignInResponse(authResponse.AccessToken));
+        });
     }
 
     [Authorize]
@@ -78,14 +80,12 @@ public class AuthController : ControllerBase
         var command = new RefreshTokenCommand(refreshToken);
         var result = await _mediator.Send(command);
 
-        return result.Match(
-            authResponse =>
-            {
-                SetTokenCookie(Response, authResponse.RefreshToken, "refreshToken", 7);
+        return this.ToActionResult(result, authResponse =>
+        {
+            SetTokenCookie(Response, authResponse.RefreshToken, "refreshToken", 7);
 
-                return Ok(new { AccessToken = authResponse.AccessToken });
-            },
-            errors => Problem(statusCode: 401, detail: string.Join(",", errors.Select(e => e.Code))));
+            return Ok(new { authResponse.AccessToken });
+        });
     }
 
     [Authorize]
@@ -95,13 +95,11 @@ public class AuthController : ControllerBase
         var command = new SignOutCommand();
         var result = await _mediator.Send(command);
 
-        return result.Match(
-            success =>
-            {
-                Response.Cookies.Delete("refreshToken");
-                Response.Cookies.Delete("accessToken");
-                return Ok(success);
-            },
-            errors => Problem(statusCode: 401, detail: string.Join(",", errors.Select(e => e.Code))));
+        return this.ToActionResult(result, success =>
+        {
+            Response.Cookies.Delete("refreshToken");
+            Response.Cookies.Delete("accessToken");
+            return Ok(success);
+        });
     }
 }

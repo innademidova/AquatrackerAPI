@@ -24,7 +24,7 @@ public class RefreshTokenCommandHandler: IRequestHandler<RefreshTokenCommand, Er
         var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == _currentUser.Id, cancellationToken);
         if (user == null || user.RefreshToken != request.RefreshToken)
         {
-            return Error.Failure("Invalid refresh token.");
+            return Error.Validation(description: "Invalid refresh token.");
         }
 
         var newAccessToken = _tokenService.GenerateAccessToken(user);

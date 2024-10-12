@@ -23,12 +23,12 @@ public class SignInCommandHandler : IRequestHandler<SignInCommand, ErrorOr<AuthR
 
         if (user == null)
         {
-            return Error.Failure("Email or password are incorrect");
+            return Error.Validation(description:"Email or password are incorrect");
         }
 
         if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
-            return Error.Failure("Email or password are incorrect");
+            return Error.Validation(description:"Email or password are incorrect");
         }
 
         var accessToken = _tokenService.GenerateAccessToken(user);

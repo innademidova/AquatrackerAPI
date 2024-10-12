@@ -20,7 +20,7 @@ public class SignUpCommandHandler: IRequestHandler<SignUpCommand, ErrorOr<Succes
         var existingUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
         if (existingUser != null)
         {
-            return Error.Failure("User with this email already exists.");
+            return Error.Conflict(description:"User with this email already exists.");
         }
 
         string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
